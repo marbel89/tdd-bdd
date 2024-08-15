@@ -122,7 +122,7 @@ class TestProductModel(unittest.TestCase):
         self.assertIsNone(found_product)
 
     def test_update_a_product(self):
-        """ It should update a product """
+        """ It should update a product (happy path) """
         product = ProductFactory()
         logging.info("ProductFactory product: %s", product)
         product.id = None
@@ -138,13 +138,39 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(products[0].id, original_id)
         self.assertEqual(products[0].description, "Test")
 
+    def test_update_nonexistent_product(self):
+        """ It should fail to update a non-existing product (sad path) """
+        non_existent_product = ProductFactory()
+        non_existent_product.id = 99999
+        non_existent_product.description = "Test"
+        update_result = non_existent_product.update()
+
+        self.assertFalse(update_result)
+
+        products = Product.all()
+        self.assertEqual(len(products), 0)
+
     def test_delete_a_product(self):
-        """ It should delete a product """
+        """ It should delete a product (Happy path)"""
         product = ProductFactory()
         product.create()
         self.assertEqual(len(Product.all()), 1)
         product.delete()
         self.assertEqual(len(Product.all()), 0)
+
+    def test_delete_nonexistent_product(self):
+        """ It should fail deleting a nonexistent product (Sad path)"""
+        product = ProductFactory()
+        product.create()
+
+        pcount = len(Product.all())
+
+        non_product = ProductFactory()
+        non_product.id = 999999
+
+        self.assertFalse(non_product.delete())
+        self.assertEqual(len(Product.all()), pcount)
+        self.assertIsNotNone(Product.find(product.id))
 
     def test_list_all_products(self):
         """ It should list all products """
@@ -157,7 +183,7 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(len(products), 5)
 
     def test_find_by_name(self):
-        """ It should find a product by name """
+        """ It should find a product by name (Happy path)"""
         products = ProductFactory.create_batch(5)
         for product in products:
             product.create()
@@ -168,8 +194,16 @@ class TestProductModel(unittest.TestCase):
         for product in found:
             self.assertEqual(product.name, name)
 
+    def test_find_nonexistent_name(self):
+        """ It should faild finding a nonexisting product by name (Sad path)"""
+        existing_products = ProductFactory.create_batch(5)
+        for product in existing_products:
+            product.create()
+        found = Product.find_by_name("Nonexisting Product")
+        self.assertEqual(found.count(), 0)
+
     def test_find_by_availability(self):
-        """It should Find Products by Availability"""
+        """It should Find Products by Availability (Happy path) """
         products = ProductFactory.create_batch(10)
         for product in products:
             product.create()
@@ -180,8 +214,17 @@ class TestProductModel(unittest.TestCase):
         for product in found:
             self.assertEqual(product.available, available)
 
+    def test_find_nonexistent_availability(self):
+        """ It should fail finding products by availability (Sad Path) """
+        products = ProductFactory.create_batch(10, available=True)
+        for product in products:
+            product.create()
+        found = Product.find_by_availability(False)
+        self.assertEqual(found.count(), 0)
+        self.assertTrue(found.all() == [])  # Additional check to ensure the result is truly empty
+
     def test_find_by_category(self):
-        """It should Find Products by Category"""
+        """It should Find Products by Category(Happy Path)"""
         products = ProductFactory.create_batch(10)
         for product in products:
             product.create()
@@ -191,3 +234,12 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(found.count(), count)
         for product in found:
             self.assertEqual(product.category, category)
+
+    def test_find_nonexistent_category(self):
+        """ It should fail finding products by category (Sad Path)"""
+        products = ProductFactory.create_batch(10, category=Category.CLOTHS)
+        for product in products:
+            product.create()
+        found = Product.find_by_category(Category.FOOD)
+        self.assertEqual(found.count(), 0)
+        self.assertTrue(found.all() == [])  # Additional check to ensure the result is truly empty
