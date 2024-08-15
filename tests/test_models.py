@@ -106,26 +106,28 @@ class TestProductModel(unittest.TestCase):
     #
 
     def test_read_a_product(self):
-        """ It should read a product """
+        """ It should read a product (happy path)"""
         product = ProductFactory()
-        # Set the ID of the product object to None and then call the create() method on the product.
         product.id = None
         product.create()
-        # Assert that the ID of the product object is not None after calling the create() method.
         self.assertIsNotNone(product.id)
-        # Fetch the product back from the system using the product ID and store it in found_product
         found_product = Product.find(product.id)
-        # Assert that the properties of the found_product match with the properties of the original product object, such as id, name, description and price.
         self.assertEqual(found_product.id, product.id)
         self.assertEqual(found_product.name, product.name)
+
+    def test_read_nonexistent_product(self):
+        """ It return Nuone when trying to read a non-existent product (Sad path)"""
+        non_existent_id = 99999
+        found_product = Product.find(non_existent_id)
+        self.assertIsNone(found_product)
 
     def test_update_a_product(self):
         """ It should update a product """
         product = ProductFactory()
-        logging.info(f"ProductFactory product: {product}")
+        logging.info("ProductFactory product: %s", product)
         product.id = None
         product.create()
-        logging.info(f"Created product: {product}")
+        logging.info("Created product: %s", product)
         product.description = "Test"
         original_id = product.id
         product.update()
@@ -164,7 +166,7 @@ class TestProductModel(unittest.TestCase):
         found = Product.find_by_name(name)
         self.assertEqual(found.count(), count)
         for product in found:
-            self.assertEqual(product.name, name) 
+            self.assertEqual(product.name, name)
 
     def test_find_by_availability(self):
         """It should Find Products by Availability"""
