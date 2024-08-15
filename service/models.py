@@ -108,9 +108,13 @@ class Product(db.Model):
 
     def delete(self):
         """Removes a Product from the data store"""
-        logger.info("Deleting %s", self.name)
-        db.session.delete(self)
-        db.session.commit()
+        try:
+            logger.info("Deleting %s", self.name)
+            db.session.delete(self)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return False
 
     def serialize(self) -> dict:
         """Serializes a Product into a dictionary"""
