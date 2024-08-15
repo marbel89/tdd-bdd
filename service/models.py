@@ -112,7 +112,9 @@ class Product(db.Model):
             logger.info("Deleting %s", self.name)
             db.session.delete(self)
             db.session.commit()
-        except Exception as e:
+            return True
+        except Exception as error:
+            logging.debug(error)
             db.session.rollback()
             return False
 
