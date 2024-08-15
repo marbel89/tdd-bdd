@@ -112,6 +112,7 @@ def list_products():
     name = request.args.get("name")
     # Get the `category` parameter from the request (hint: use `request.args.get()`
     category = request.args.get("category")
+    available = request.args.get("available")
 
     if name:
         app.logger.info("Find by name: %s", name)
@@ -121,9 +122,11 @@ def list_products():
         # create enum from string
         category_value = getattr(Category, category.upper())
         products = Product.find_by_category(category_value)
-    elif availability:
-        app.logger.info("Find by availability: %s", availability)
-        
+    elif available:
+        app.logger.info("Find by available: %s", available)
+        # create bool from string
+        available_value = available.lower() in ["true", "yes", "1"]
+        products = Product.find_by_availability(available_value)
     else:
         app.logger.info("Find all")
         products = Product.all()

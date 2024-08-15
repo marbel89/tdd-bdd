@@ -229,14 +229,14 @@ class TestProductRoutes(TestCase):
         # store the  count of available products.
         available_count = len(available_products)
         # Log a debug message indicating the count and details of the available products
-        app.logger.info("Count of available products: [%s]", available_count)
-        app.logger.info("Details of available products: [%s]", products)
+        app.logger.info("Count of available products: %s", available_count)
+        app.logger.info("Details of available products: %s", products)
         # send an HTTP GET request to the URL specified by the BASE_URL variable, along with a query parameter "available" set to true.
         response = self.client.get(
                     BASE_URL, query_string="available=true"
         )
         # assert that response status code is 200, indicating a successful request (HTTP 200 OK)
-        self.assertEqual(response.status, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         # retrieve the JSON data from the response
         data = response.get_json()
         # assert that the length of the data list (i.e., the number of products returned in the response) is equal to available_count
