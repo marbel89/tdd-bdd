@@ -118,11 +118,9 @@ class TestProductRoutes(TestCase):
         response = self.client.post(BASE_URL, json=test_product.serialize())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        # Make sure location header is set
         location = response.headers.get("Location", None)
         self.assertIsNotNone(location)
 
-        # Check the data is correct
         new_product = response.get_json()
         self.assertEqual(new_product["name"], test_product.name)
         self.assertEqual(new_product["description"], test_product.description)
@@ -130,9 +128,21 @@ class TestProductRoutes(TestCase):
         self.assertEqual(new_product["available"], test_product.available)
         self.assertEqual(new_product["category"], test_product.category.name)
 
-        #
-        # Uncomment this code once READ is implemented
-        #
+    def test_get_product(self):
+        """ It should get a single product """
+        test_product = self._create_products(1)[0]
+        response = self.client.get(f"{BASE_URL}/{test_product.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["name"], test_product.name)
+
+    def test_get_product_not_found(self):
+        """It should not Get a Product thats not found"""
+        response = self.client.get(f"{BASE_URL}/0")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        data = response.get_json()
+        logging.info(data["message"])
+        self.assertIn("not found", data["message"])
 
         # # Check that the location header was correct
         # response = self.client.get(location)
@@ -146,6 +156,7 @@ class TestProductRoutes(TestCase):
 
     def test_create_product_with_no_name(self):
         """It should not Create a Product without a name"""
+
         product = self._create_products()[0]
         new_product = product.serialize()
         del new_product["name"]
